@@ -2,67 +2,61 @@
 <html lang="en">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Private Chat - Pro Version</title>
+    <title>Pro Media Chat</title>
     <style>
-        /* Base Theme (Dark) */
-        :root {
-            --bg: #0f172a; --panel: #1e293b; --accent: #38bdf8;
-            --text: #f8fafc; --input-bg: #0f172a; --msg-bg: #1e293b;
-        }
+        :root { --bg: #0f172a; --panel: #1e293b; --accent: #38bdf8; --text: #f8fafc; }
+        body.light-mode { --bg: #f1f5f9; --panel: #ffffff; --accent: #0284c7; --text: #1e293b; }
 
-        /* Light Mode Styles */
-        body.light-mode {
-            --bg: #f1f5f9; --panel: #ffffff; --accent: #0284c7;
-            --text: #1e293b; --input-bg: #f8fafc; --msg-bg: #e2e8f0;
-        }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; transition: 0.3s; }
 
-        body { 
-            margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); 
-            color: var(--text); height: 100vh; display: flex; flex-direction: column;
-            transition: background 0.3s, color 0.3s;
-        }
-
+        /* BIG BOLD CENTERED LIGHT BLUE HEADER */
         header { 
-            background: var(--panel); padding: 15px; display: flex; 
-            justify-content: space-between; align-items: center;
-            border-bottom: 2px solid var(--accent); box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            background: var(--panel); padding: 25px; text-align: center; 
+            border-bottom: 3px solid var(--accent); position: relative;
+        }
+        header h1 { 
+            margin: 0; font-size: 2.2rem; color: #38bdf8; text-transform: uppercase; 
+            letter-spacing: 4px; font-weight: 900; text-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
         }
 
-        .theme-toggle { cursor: pointer; font-size: 1.2rem; background: none; border: none; color: var(--accent); }
+        .theme-toggle { position: absolute; right: 20px; top: 30px; cursor: pointer; font-size: 1.5rem; background: none; border: none; color: var(--accent); }
 
-        #messages { list-style-type: none; margin: 0; padding: 20px; flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+        #messages { list-style-type: none; margin: 0; padding: 20px; flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+        #messages li { padding: 12px; background: var(--panel); border-radius: 12px; max-width: 80%; align-self: flex-start; border-left: 4px solid var(--accent); }
         
-        #messages li { 
-            padding: 12px; background: var(--msg-bg); border-radius: 12px; 
-            max-width: 80%; align-self: flex-start; border-left: 4px solid var(--accent);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-
         .message-header { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; }
-        .user-name { font-weight: bold; font-size: 0.8rem; color: var(--accent); }
-        .timestamp { font-size: 0.65rem; opacity: 0.6; }
+        .user-name { font-weight: bold; font-size: 0.85rem; color: var(--accent); }
+        .timestamp { font-size: 0.7rem; opacity: 0.6; }
+        
         .chat-img { max-width: 100%; border-radius: 8px; margin-top: 5px; }
+        audio { margin-top: 8px; max-width: 100%; height: 35px; }
 
-        #form { background: var(--panel); padding: 15px; display: flex; gap: 10px; align-items: center; border-top: 1px solid rgba(0,0,0,0.1); }
-        #input { flex-grow: 1; border: 1px solid rgba(0,0,0,0.1); padding: 12px; border-radius: 25px; background: var(--input-bg); color: var(--text); outline: none; }
+        #form { background: var(--panel); padding: 15px; display: flex; gap: 12px; align-items: center; border-top: 1px solid rgba(0,0,0,0.1); }
+        #input { flex-grow: 1; border: none; padding: 12px 20px; border-radius: 25px; background: var(--bg); color: var(--text); outline: none; border: 1px solid var(--accent); }
         
         #file-input { display: none; }
-        .clip-btn { cursor: pointer; font-size: 1.4rem; color: var(--accent); }
-        .send-btn { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 25px; cursor: pointer; font-weight: bold; }
+        .icon-btn { cursor: pointer; font-size: 1.6rem; color: var(--accent); transition: 0.2s; }
+        .icon-btn:active { transform: scale(0.9); }
+        .send-btn { background: var(--accent); color: white; border: none; padding: 10px 22px; border-radius: 25px; cursor: pointer; font-weight: bold; }
+        .recording { color: #ef4444; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0.3; } }
     </style>
 </head>
-<body>
+<body class="dark-mode">
     <header>
-        <span>🔒 PRIVATE, SECURE CHATROOM OF ANI-ADHIII</span>
+        <h1>🔒Private Secure Chatroom of Ani-Adhiii</h1>
         <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
     </header>
 
     <ul id="messages"></ul>
 
     <form id="form">
-        <label for="file-input" class="clip-btn">📎</label>
+        <label for="file-input" class="icon-btn">📎</label>
         <input type="file" id="file-input" accept="image/*">
-        <input id="input" autocomplete="off" placeholder="Message..." />
+        
+        <span id="mic-btn" class="icon-btn">🎤</span>
+        
+        <input id="input" autocomplete="off" placeholder="Type a message..." />
         <button class="send-btn">Send</button>
     </form>
 
@@ -70,11 +64,12 @@
     <script>
         var socket = io();
         var myName = prompt("Enter your name:") || "Guest";
+        let mediaRecorder;
+        let audioChunks = [];
 
-        function toggleTheme() {
-            document.body.classList.toggle('light-mode');
-        }
+        function toggleTheme() { document.body.classList.toggle('light-mode'); }
 
+        // --- Message Handling ---
         document.getElementById('form').addEventListener('submit', function(e) {
             e.preventDefault();
             var input = document.getElementById('input');
@@ -84,6 +79,7 @@
             }
         });
 
+        // --- Image Handling ---
         document.getElementById('file-input').addEventListener('change', function(e) {
             var reader = new FileReader();
             reader.onload = function(ev) {
@@ -92,9 +88,37 @@
             reader.readAsDataURL(e.target.files[0]);
         });
 
+        // --- Voice Recording ---
+        const micBtn = document.getElementById('mic-btn');
+        micBtn.addEventListener('mousedown', async () => {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+                const reader = new FileReader();
+                reader.onload = ev => socket.emit('chat message', { name: myName, msg: ev.target.result, type: 'audio' });
+                reader.readAsDataURL(audioBlob);
+            };
+            mediaRecorder.start();
+            micBtn.classList.add('recording');
+        });
+
+        window.addEventListener('mouseup', () => {
+            if (mediaRecorder && mediaRecorder.state === "recording") {
+                mediaRecorder.stop();
+                micBtn.classList.remove('recording');
+            }
+        });
+
+        // --- Receiving Messages ---
         socket.on('chat message', function(data) {
             var item = document.createElement('li');
-            var content = data.type === 'image' ? `<img class="chat-img" src="${data.msg}">` : data.msg;
+            let content = data.msg;
+            if (data.type === 'image') content = `<img class="chat-img" src="${data.msg}">`;
+            if (data.type === 'audio') content = `<audio controls src="${data.msg}"></audio>`;
+
             item.innerHTML = `
                 <div class="message-header">
                     <span class="user-name">${data.name}</span>
@@ -113,11 +137,7 @@
             if (el) el.innerText = "✓ Seen by " + data.reader;
         });
 
-        socket.on('clear chat', function() {
-            document.getElementById('messages').innerHTML = '';
-        });
+        socket.on('clear chat', function() { document.getElementById('messages').innerHTML = ''; });
     </script>
 </body>
 </html>
-
-
