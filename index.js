@@ -8,12 +8,17 @@ app.use(express.static(__dirname + '/public'));
 
 io.on('connection', (socket) => {
   socket.on('chat message', (data) => {
-    // This line gets the EXACT current time (e.g., 7:58 PM)
+    // Exact timestamp logic
     const now = new Date();
     data.time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    
     data.id = Date.now() + Math.random(); 
-    io.emit('chat message', data);
+    
+    // Secret command to clear chat for everyone
+    if (data.msg === "/clear") {
+        io.emit('clear chat');
+    } else {
+        io.emit('chat message', data);
+    }
   });
 
   socket.on('message read', (readData) => {
@@ -22,6 +27,5 @@ io.on('connection', (socket) => {
 });
 
 http.listen(PORT, () => {
-  console.log('Server running with Live Timestamps on port ' + PORT);
+  console.log('Server running on port ' + PORT);
 });
-
