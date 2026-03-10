@@ -1,7 +1,9 @@
 const express = require('express');
 const app = express();
 const http = require('http').Server(app);
-const io = require('socket.io')(http, { maxHttpBufferSize: 1e8 }); // Increased to 100MB for audio
+const io = require('socket.io')(http, { 
+    maxHttpBufferSize: 1e8 // Allows up to 100MB for voice/images
+});
 const PORT = process.env.PORT || 3000;
 
 app.use(express.static(__dirname + '/public'));
@@ -25,5 +27,5 @@ io.on('connection', (socket) => {
 });
 
 http.listen(PORT, () => {
-  console.log('Server running with Voice Support on port ' + PORT);
+  console.log('Server is running on port ' + PORT);
 });
