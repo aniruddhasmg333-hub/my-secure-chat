@@ -18,18 +18,16 @@
 
         body { 
             margin: 0; font-family: 'Segoe UI', Helvetica, sans-serif; 
-            background: var(--bg); color: var(--text); height: 100dvh; /* Uses Dynamic Viewport Height for Mobile */
+            background: var(--bg); color: var(--text); height: 100dvh; 
             display: flex; flex-direction: column; overflow: hidden; transition: 0.3s;
         }
 
-        /* SMALLER CENTERED HEADER */
         header { 
             background: var(--panel); padding: 12px; text-align: center; 
             border-bottom: 2px solid var(--accent); flex-shrink: 0;
         }
         header h1 { margin: 0; font-size: 1.3rem; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; font-weight: 800; }
 
-        /* FLOATING THEME TOGGLE - Always accessible */
         .theme-btn { 
             position: fixed; right: 15px; top: 10px; cursor: pointer; z-index: 100;
             font-size: 1.2rem; background: var(--panel); border: 1px solid var(--accent); 
@@ -57,18 +55,23 @@
         .chat-img { max-width: 100%; border-radius: 10px; margin-top: 5px; }
         audio { margin-top: 8px; max-width: 100%; height: 35px; }
 
-        /* FIXED INPUT BOX - Fully visible */
+        /* TYPING INDICATOR STYLE */
+        #typing-status {
+            padding: 5px 20px; font-size: 0.75rem; color: var(--accent); font-style: italic;
+            height: 20px; transition: 0.2s; opacity: 0;
+        }
+
         #form { 
             background: var(--panel); padding: 10px 15px; display: flex; gap: 10px; 
             align-items: center; border-top: 1px solid rgba(0,0,0,0.1); flex-shrink: 0;
-            padding-bottom: calc(10px + env(safe-area-inset-bottom)); /* Fix for iPhone notches */
+            padding-bottom: calc(10px + env(safe-area-inset-bottom));
         }
         
         .icon-stack { display: flex; flex-direction: column; gap: 4px; }
         
         #input { 
             flex-grow: 1; border: 1px solid rgba(120,120,120,0.3); padding: 10px 15px; 
-            border-radius: 20px; background: var(--bg); color: var(--text); outline: none; font-size: 16px; /* 16px prevents iOS auto-zoom */
+            border-radius: 20px; background: var(--bg); color: var(--text); outline: none; font-size: 16px;
         }
 
         .send-btn { 
@@ -87,20 +90,21 @@
         @media (min-width: 768px) {
             #messages { padding: 20px 20%; }
             #messages li { max-width: 65%; }
-            header h1 { font-size: 1.5rem; }
         }
     </style>
 </head>
 <body>
-    <button class="theme-btn" onclick="toggleTheme()" aria-label="Toggle Theme">🌓</button>
-    <header><h1>Secure Private Chatroom of A squared!</h1></header>
+    <button class="theme-btn" onclick="toggleTheme()">🌓</button>
+    <header><h1>Secure Private Chatroom of A-Squared! </h1></header>
 
     <ul id="messages"></ul>
 
+    <div id="typing-status"></div>
+
     <form id="form">
         <div class="icon-stack">
-            <label for="file-input" class="icon-btn" title="Send Image">📎</label>
-            <span id="mic-btn" class="icon-btn" title="Record Voice">🎤</span>
+            <label for="file-input" class="icon-btn">📎</label>
+            <span id="mic-btn" class="icon-btn">🎤</span>
         </div>
         <input type="file" id="file-input" accept="image/*">
         <input id="input" autocomplete="off" placeholder="Message..." />
@@ -114,15 +118,27 @@
         var socket = io();
         var myName = prompt("Enter Name:") || "User";
         let mediaRecorder, audioChunks = [];
+        let typingTimer;
 
         function toggleTheme() { document.body.classList.toggle('light-mode'); }
 
+        const inputField = document.getElementById('input');
+
+        // Typing logic
+        inputField.addEventListener('keypress', () => {
+            socket.emit('typing', myName);
+            clearTimeout(typingTimer);
+            typingTimer = setTimeout(() => {
+                socket.emit('stop typing');
+            }, 1000); // Stop showing typing after 1 second of no activity
+        });
+
         document.getElementById('form').addEventListener('submit', function(e) {
             e.preventDefault();
-            var input = document.getElementById('input');
-            if (input.value) {
-                socket.emit('chat message', { name: myName, msg: input.value, type: 'text' });
-                input.value = '';
+            if (inputField.value) {
+                socket.emit('chat message', { name: myName, msg: inputField.value, type: 'text' });
+                inputField.value = '';
+                socket.emit('stop typing');
             }
         });
 
@@ -132,58 +148,25 @@
             reader.readAsDataURL(e.target.files[0]);
         });
 
+        // Receiving typing status
+        socket.on('display typing', (user) => {
+            const status = document.getElementById('typing-status');
+            status.innerText = user + " is typing...";
+            status.style.opacity = "1";
+        });
+
+        socket.on('hide typing', () => {
+            document.getElementById('typing-status').style.opacity = "0";
+        });
+
+        // Rest of the message logic
         const micBtn = document.getElementById('mic-btn');
-        micBtn.addEventListener('touchstart', startRec); // Better for mobile
         micBtn.addEventListener('mousedown', startRec);
+        micBtn.addEventListener('touchstart', startRec);
 
         async function startRec(e) {
             e.preventDefault();
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream);
-                audioChunks = [];
-                mediaRecorder.ondataavailable = ev => audioChunks.push(ev.data);
-                mediaRecorder.onstop = () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
-                    const reader = new FileReader();
-                    reader.onload = res => socket.emit('chat message', { name: myName, msg: res.target.result, type: 'audio' });
-                    reader.readAsDataURL(audioBlob);
-                };
-                mediaRecorder.start(); micBtn.classList.add('recording');
-            } catch(err) { alert("Mic error: " + err.message); }
-        }
+                mediaRecorder = new MediaRecorder(
 
-        window.addEventListener('mouseup', stopRec);
-        window.addEventListener('touchend', stopRec);
-        function stopRec() { if (mediaRecorder?.state === "recording") { mediaRecorder.stop(); micBtn.classList.remove('recording'); } }
-
-        socket.on('chat message', function(data) {
-            var item = document.createElement('li');
-            item.className = (data.name === myName) ? 'sent' : 'received';
-            let content = data.msg;
-            if (data.type === 'image') content = `<img class="chat-img" src="${data.msg}">`;
-            if (data.type === 'audio') content = `<audio controls src="${data.msg}"></audio>`;
-
-            item.innerHTML = `
-                <div style="font-weight:bold; font-size:0.7rem; margin-bottom:2px; opacity:0.8;">${data.name}</div>
-                <div>${content}</div>
-                <div class="timestamp-area">
-                    <span>${data.time}</span>
-                    <span id="read-${data.id}"></span>
-                </div>
-            `;
-            document.getElementById('messages').appendChild(item);
-            const mList = document.getElementById('messages');
-            mList.scrollTop = mList.scrollHeight;
-            if (data.name !== myName) socket.emit('message read', { msgId: data.id, reader: myName });
-        });
-
-        socket.on('update read status', function(data) {
-            var el = document.getElementById('read-' + data.msgId);
-            if (el) el.innerHTML = `✓ <small style="font-size:0.5rem">Seen by ${data.reader}</small>`;
-        });
-
-        socket.on('clear chat', function() { document.getElementById('messages').innerHTML = ''; });
-    </script>
-</body>
-</html>
