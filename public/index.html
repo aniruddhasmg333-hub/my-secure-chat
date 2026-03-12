@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Secured Private Chat Room</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Secure Chatroom Pro</title>
     <style>
         :root { 
             --bg: #0b141a; --panel: #202c33; --accent: #38bdf8; --text: #e9edef;
@@ -18,96 +18,92 @@
 
         body { 
             margin: 0; font-family: 'Segoe UI', Helvetica, sans-serif; 
-            background: var(--bg); color: var(--text); height: 100vh; 
+            background: var(--bg); color: var(--text); height: 100dvh; /* Uses Dynamic Viewport Height for Mobile */
             display: flex; flex-direction: column; overflow: hidden; transition: 0.3s;
         }
 
-        /* CENTERED HEADER */
+        /* SMALLER CENTERED HEADER */
         header { 
-            background: var(--panel); padding: 20px; text-align: center; 
-            border-bottom: 3px solid var(--accent); z-index: 10;
+            background: var(--panel); padding: 12px; text-align: center; 
+            border-bottom: 2px solid var(--accent); flex-shrink: 0;
         }
-        header h1 { margin: 0; font-size: 1.8rem; color: var(--accent); text-transform: uppercase; letter-spacing: 3px; font-weight: 900; }
+        header h1 { margin: 0; font-size: 1.3rem; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; font-weight: 800; }
 
-        /* THEME TOGGLE FLOATING */
+        /* FLOATING THEME TOGGLE - Always accessible */
         .theme-btn { 
-            position: absolute; right: 15px; top: 18px; cursor: pointer; 
-            font-size: 1.4rem; background: none; border: none; color: var(--accent); 
+            position: fixed; right: 15px; top: 10px; cursor: pointer; z-index: 100;
+            font-size: 1.2rem; background: var(--panel); border: 1px solid var(--accent); 
+            border-radius: 50%; width: 35px; height: 35px; color: var(--accent);
+            display: flex; align-items: center; justify-content: center;
         }
 
-        /* SCROLLABLE AREA */
         #messages { 
-            list-style-type: none; margin: 0; padding: 20px; flex-grow: 1; 
+            list-style-type: none; margin: 0; padding: 15px; flex-grow: 1; 
             overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
-            scroll-behavior: smooth;
+            scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
         }
 
         #messages li { 
             padding: 10px 14px; border-radius: 15px; max-width: 85%; 
-            position: relative; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-            animation: fadeIn 0.3s ease;
+            position: relative; box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            font-size: 0.95rem;
         }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .sent { align-self: flex-end; background: var(--my-gradient); border-bottom-right-radius: 2px; color: white; }
         .light-mode .sent { color: #111b21; }
-        
         .received { align-self: flex-start; background: var(--their-gradient); border-bottom-left-radius: 2px; }
 
-        .user-name { font-weight: bold; font-size: 0.75rem; margin-bottom: 4px; display: block; opacity: 0.8; }
         .timestamp-area { font-size: 0.65rem; opacity: 0.7; margin-top: 5px; display: flex; justify-content: flex-end; align-items: center; gap: 4px; }
-        .read-receipt { color: #4ade80; font-size: 0.8rem; }
-
-        .chat-img { max-width: 100%; border-radius: 10px; margin-top: 5px; cursor: zoom-in; }
+        .chat-img { max-width: 100%; border-radius: 10px; margin-top: 5px; }
         audio { margin-top: 8px; max-width: 100%; height: 35px; }
 
-        /* NAVIGATION & INPUT */
-        #form { background: var(--panel); padding: 12px 18px; display: flex; gap: 12px; align-items: center; border-top: 1px solid rgba(0,0,0,0.1); }
-        .icon-stack { display: flex; flex-direction: column; gap: 8px; }
+        /* FIXED INPUT BOX - Fully visible */
+        #form { 
+            background: var(--panel); padding: 10px 15px; display: flex; gap: 10px; 
+            align-items: center; border-top: 1px solid rgba(0,0,0,0.1); flex-shrink: 0;
+            padding-bottom: calc(10px + env(safe-area-inset-bottom)); /* Fix for iPhone notches */
+        }
+        
+        .icon-stack { display: flex; flex-direction: column; gap: 4px; }
         
         #input { 
-            flex-grow: 1; border: none; padding: 12px 18px; border-radius: 25px; 
-            background: var(--bg); color: var(--text); outline: none; font-size: 1rem;
-            border: 1px solid rgba(120,120,120,0.2);
+            flex-grow: 1; border: 1px solid rgba(120,120,120,0.3); padding: 10px 15px; 
+            border-radius: 20px; background: var(--bg); color: var(--text); outline: none; font-size: 16px; /* 16px prevents iOS auto-zoom */
         }
 
-        /* OFFICIAL SEND ICON STYLE */
         .send-btn { 
             background: var(--accent); color: #0b141a; border: none; 
-            width: 45px; height: 45px; border-radius: 50%; 
+            width: 40px; height: 40px; border-radius: 50%; 
             cursor: pointer; display: flex; align-items: center; justify-content: center;
-            transition: 0.2s; flex-shrink: 0;
+            flex-shrink: 0;
         }
-        .send-btn:hover { transform: scale(1.05); filter: brightness(1.1); }
-        .send-btn svg { width: 20px; height: 20px; fill: currentColor; transform: rotate(45deg); margin-left: -3px; }
+        .send-btn svg { width: 18px; height: 18px; fill: currentColor; transform: rotate(45deg); margin-left: -2px; }
 
-        .icon-btn { cursor: pointer; font-size: 1.3rem; color: var(--accent); }
+        .icon-btn { cursor: pointer; font-size: 1.2rem; color: var(--accent); }
         #file-input { display: none; }
         .recording { color: #ef4444; animation: blink 1s infinite; }
         @keyframes blink { 50% { opacity: 0.3; } }
 
-        /* Responsive laptop adjustment */
         @media (min-width: 768px) {
-            #messages { padding: 40px 15%; }
-            #messages li { max-width: 60%; }
+            #messages { padding: 20px 20%; }
+            #messages li { max-width: 65%; }
+            header h1 { font-size: 1.5rem; }
         }
     </style>
 </head>
 <body>
-    <header>
-        <h1>Secure Private Chat Room of A-Squared!</h1>
-        <button class="theme-btn" onclick="toggleTheme()">🌓</button>
-    </header>
+    <button class="theme-btn" onclick="toggleTheme()" aria-label="Toggle Theme">🌓</button>
+    <header><h1>Secure Private Chatroom of A squared!</h1></header>
 
     <ul id="messages"></ul>
 
     <form id="form">
         <div class="icon-stack">
-            <label for="file-input" class="icon-btn">📎</label>
-            <span id="mic-btn" class="icon-btn">🎤</span>
+            <label for="file-input" class="icon-btn" title="Send Image">📎</label>
+            <span id="mic-btn" class="icon-btn" title="Record Voice">🎤</span>
         </div>
         <input type="file" id="file-input" accept="image/*">
-        <input id="input" autocomplete="off" placeholder="Type a message..." />
+        <input id="input" autocomplete="off" placeholder="Message..." />
         <button type="submit" class="send-btn">
             <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
         </button>
@@ -116,7 +112,7 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
         var socket = io();
-        var myName = prompt("Display Name:") || "User";
+        var myName = prompt("Enter Name:") || "User";
         let mediaRecorder, audioChunks = [];
 
         function toggleTheme() { document.body.classList.toggle('light-mode'); }
@@ -137,22 +133,29 @@
         });
 
         const micBtn = document.getElementById('mic-btn');
-        micBtn.addEventListener('mousedown', async () => {
+        micBtn.addEventListener('touchstart', startRec); // Better for mobile
+        micBtn.addEventListener('mousedown', startRec);
+
+        async function startRec(e) {
+            e.preventDefault();
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
                 mediaRecorder = new MediaRecorder(stream);
                 audioChunks = [];
-                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                mediaRecorder.ondataavailable = ev => audioChunks.push(ev.data);
                 mediaRecorder.onstop = () => {
                     const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
                     const reader = new FileReader();
-                    reader.onload = ev => socket.emit('chat message', { name: myName, msg: ev.target.result, type: 'audio' });
+                    reader.onload = res => socket.emit('chat message', { name: myName, msg: res.target.result, type: 'audio' });
                     reader.readAsDataURL(audioBlob);
                 };
                 mediaRecorder.start(); micBtn.classList.add('recording');
-            } catch(e) { alert("Mic error: " + e.message); }
-        });
-        window.addEventListener('mouseup', () => { if (mediaRecorder?.state === "recording") { mediaRecorder.stop(); micBtn.classList.remove('recording'); } });
+            } catch(err) { alert("Mic error: " + err.message); }
+        }
+
+        window.addEventListener('mouseup', stopRec);
+        window.addEventListener('touchend', stopRec);
+        function stopRec() { if (mediaRecorder?.state === "recording") { mediaRecorder.stop(); micBtn.classList.remove('recording'); } }
 
         socket.on('chat message', function(data) {
             var item = document.createElement('li');
@@ -162,18 +165,16 @@
             if (data.type === 'audio') content = `<audio controls src="${data.msg}"></audio>`;
 
             item.innerHTML = `
-                <span class="user-name">${data.name}</span>
+                <div style="font-weight:bold; font-size:0.7rem; margin-bottom:2px; opacity:0.8;">${data.name}</div>
                 <div>${content}</div>
                 <div class="timestamp-area">
                     <span>${data.time}</span>
-                    <span class="read-receipt" id="read-${data.id}"></span>
+                    <span id="read-${data.id}"></span>
                 </div>
             `;
             document.getElementById('messages').appendChild(item);
-            // Smooth scroll to bottom
-            const msgList = document.getElementById('messages');
-            msgList.scrollTo({ top: msgList.scrollHeight, behavior: 'smooth' });
-            
+            const mList = document.getElementById('messages');
+            mList.scrollTop = mList.scrollHeight;
             if (data.name !== myName) socket.emit('message read', { msgId: data.id, reader: myName });
         });
 
@@ -186,5 +187,3 @@
     </script>
 </body>
 </html>
-
-
