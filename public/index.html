@@ -2,47 +2,52 @@
 <html lang="en">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pro Media Chat</title>
+    <title>Secure Chat Pro</title>
     <style>
-        :root { --bg: #0f172a; --panel: #1e293b; --accent: #38bdf8; --text: #f8fafc; }
-        body.light-mode { --bg: #f1f5f9; --panel: #ffffff; --accent: #0284c7; --text: #1e293b; }
-
-        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; transition: 0.3s; }
-
-        /* BIG BOLD CENTERED HEADER */
-        header { 
-            background: var(--panel); padding: 30px 15px; text-align: center; 
-            border-bottom: 4px solid var(--accent); position: relative;
+        :root { 
+            --bg: #0b141a; --panel: #202c33; --accent: #00a884; 
+            --sent: #005c4b; --received: #202c33; --text: #e9edef; 
         }
-        header h1 { 
-            margin: 0; font-size: 2.8rem; color: #38bdf8; text-transform: uppercase; 
-            letter-spacing: 5px; font-weight: 900; 
+        body.light-mode { 
+            --bg: #efeae2; --panel: #f0f2f5; --accent: #008069; 
+            --sent: #dcf8c6; --received: #ffffff; --text: #111b21; 
         }
 
-        .theme-toggle { position: absolute; right: 15px; top: 15px; cursor: pointer; font-size: 1.2rem; background: none; border: none; color: var(--accent); }
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; transition: 0.3s; }
 
-        #messages { list-style-type: none; margin: 0; padding: 20px; flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
-        #messages li { padding: 12px; background: var(--panel); border-radius: 12px; max-width: 80%; align-self: flex-start; border-left: 4px solid var(--accent); }
-        
-        .message-header { display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px; }
-        .user-name { font-weight: bold; font-size: 0.85rem; color: var(--accent); }
-        .timestamp { font-size: 0.7rem; opacity: 0.6; }
+        header { background: var(--panel); padding: 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); position: relative; }
+        header h1 { margin: 0; font-size: 1.8rem; color: #38bdf8; text-transform: uppercase; letter-spacing: 3px; font-weight: 900; }
+        .theme-toggle { position: absolute; right: 20px; top: 25px; cursor: pointer; font-size: 1.2rem; background: none; border: none; color: #38bdf8; }
+
+        #messages { list-style-type: none; margin: 0; padding: 20px; flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
+
+        /* --- WHATSAPP BUBBLE LOGIC --- */
+        #messages li { 
+            padding: 8px 12px; border-radius: 8px; max-width: 75%; 
+            position: relative; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13);
+            word-wrap: break-word; font-size: 0.95rem;
+        }
+
+        /* Messages sent by ME */
+        .sent { align-self: flex-end; background: var(--sent); color: var(--text); border-bottom-right-radius: 2px !important; }
+
+        /* Messages sent by OTHERS */
+        .received { align-self: flex-start; background: var(--received); color: var(--text); border-bottom-left-radius: 2px !important; }
+
+        .message-header { display: flex; flex-direction: column; margin-bottom: 4px; }
+        .user-name { font-weight: bold; font-size: 0.75rem; color: #38bdf8; }
+        .timestamp { font-size: 0.65rem; opacity: 0.6; align-self: flex-end; margin-top: 4px; }
         
         .chat-img { max-width: 100%; border-radius: 8px; margin-top: 5px; }
-        audio { margin-top: 8px; max-width: 100%; height: 35px; }
+        audio { margin-top: 8px; max-width: 200px; height: 35px; }
 
-        #form { background: var(--panel); padding: 15px; display: flex; gap: 15px; align-items: center; border-top: 1px solid rgba(0,0,0,0.1); }
-        
-        /* STACKED ICONS CONTAINER */
-        .icon-stack { display: flex; flex-direction: column; gap: 10px; align-items: center; }
-        
-        #input { flex-grow: 1; border: none; padding: 15px 20px; border-radius: 25px; background: var(--bg); color: var(--text); outline: none; border: 1px solid var(--accent); }
+        #form { background: var(--panel); padding: 10px 15px; display: flex; gap: 12px; align-items: center; }
+        .icon-stack { display: flex; flex-direction: column; gap: 8px; align-items: center; }
+        #input { flex-grow: 1; border: none; padding: 12px 18px; border-radius: 25px; background: var(--bg); color: var(--text); outline: none; }
         
         #file-input { display: none; }
-        .icon-btn { cursor: pointer; font-size: 1.5rem; color: var(--accent); line-height: 1; transition: 0.2s; }
-        .icon-btn:hover { transform: scale(1.1); }
-        
-        .send-btn { background: var(--accent); color: #0f172a; border: none; padding: 12px 25px; border-radius: 25px; cursor: pointer; font-weight: bold; }
+        .icon-btn { cursor: pointer; font-size: 1.4rem; color: #8696a0; transition: 0.2s; }
+        .send-btn { background: #38bdf8; color: #0f172a; border: none; padding: 10px 20px; border-radius: 25px; cursor: pointer; font-weight: bold; }
         .recording { color: #ef4444; animation: blink 1s infinite; }
         @keyframes blink { 50% { opacity: 0.3; } }
     </style>
@@ -60,7 +65,6 @@
             <label for="file-input" class="icon-btn">📎</label>
             <span id="mic-btn" class="icon-btn">🎤</span>
         </div>
-        
         <input type="file" id="file-input" accept="image/*">
         <input id="input" autocomplete="off" placeholder="Type a message..." />
         <button class="send-btn">Send</button>
@@ -69,13 +73,12 @@
     <script src="/socket.io/socket.io.js"></script>
     <script>
         var socket = io();
-        var myName = prompt("Your Name:") || "Guest";
+        var myName = prompt("Enter your name:") || "Guest";
         let mediaRecorder;
         let audioChunks = [];
 
         function toggleTheme() { document.body.classList.toggle('light-mode'); }
 
-        // Send Text
         document.getElementById('form').addEventListener('submit', function(e) {
             e.preventDefault();
             var input = document.getElementById('input');
@@ -85,7 +88,6 @@
             }
         });
 
-        // Send Image
         document.getElementById('file-input').addEventListener('change', function(e) {
             var reader = new FileReader();
             reader.onload = function(ev) {
@@ -94,7 +96,7 @@
             reader.readAsDataURL(e.target.files[0]);
         });
 
-        // Voice Recording (Hold to Record)
+        // Voice Recording Logic
         const micBtn = document.getElementById('mic-btn');
         micBtn.addEventListener('mousedown', async () => {
             try {
@@ -110,7 +112,7 @@
                 };
                 mediaRecorder.start();
                 micBtn.classList.add('recording');
-            } catch(err) { alert("Microphone access denied."); }
+            } catch(err) { console.log(err); }
         });
 
         window.addEventListener('mouseup', () => {
@@ -120,21 +122,26 @@
             }
         });
 
-        // Display Messages
+        // Receiving Messages
         socket.on('chat message', function(data) {
             var item = document.createElement('li');
+            
+            // KEY STEP: Add "sent" class if it's me, "received" if it's someone else
+            item.classList.add(data.name === myName ? 'sent' : 'received');
+
             let content = data.msg;
             if (data.type === 'image') content = `<img class="chat-img" src="${data.msg}">`;
             if (data.type === 'audio') content = `<audio controls src="${data.msg}"></audio>`;
 
             item.innerHTML = `
                 <div class="message-header">
-                    <span class="user-name">${data.name}</span>
-                    <span class="timestamp">${data.time}</span>
+                    ${data.name !== myName ? `<span class="user-name">${data.name}</span>` : ''}
                 </div>
-                <div>${content}</div>
-                <div style="font-size:0.6rem; color:#10b981; margin-top:4px;" id="read-${data.id}"></div>
+                <div class="message-body">${content}</div>
+                <div class="timestamp">${data.time}</div>
+                <div style="font-size:0.6rem; color:#38bdf8; text-align:right;" id="read-${data.id}"></div>
             `;
+            
             document.getElementById('messages').appendChild(item);
             document.getElementById('messages').scrollTo(0, document.getElementById('messages').scrollHeight);
             if (data.name !== myName) socket.emit('message read', { msgId: data.id, reader: myName });
@@ -142,10 +149,11 @@
 
         socket.on('update read status', function(data) {
             var el = document.getElementById('read-' + data.msgId);
-            if (el) el.innerText = "✓ Seen by " + data.reader;
+            if (el) el.innerText = "✓ Seen";
         });
 
         socket.on('clear chat', function() { document.getElementById('messages').innerHTML = ''; });
     </script>
 </body>
 </html>
+
