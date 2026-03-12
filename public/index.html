@@ -2,59 +2,64 @@
 <html lang="en">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Chat Pro</title>
+    <title>Secure Private Chatroom</title>
     <style>
-        :root { 
-            --bg: #0b141a; --panel: #202c33; --accent: #00a884; 
-            --sent: #005c4b; --received: #202c33; --text: #e9edef; 
-        }
-        body.light-mode { 
-            --bg: #efeae2; --panel: #f0f2f5; --accent: #008069; 
-            --sent: #dcf8c6; --received: #ffffff; --text: #111b21; 
-        }
+        :root { --bg: #0b141a; --panel: #202c33; --accent: #38bdf8; --text: #e9edef; --my-msg: #005c4b; --their-msg: #202c33; }
+        body.light-mode { --bg: #efeae2; --panel: #ffffff; --accent: #0284c7; --text: #111b21; --my-msg: #d9fdd3; --their-msg: #ffffff; }
 
         body { margin: 0; font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; transition: 0.3s; }
 
-        header { background: var(--panel); padding: 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); position: relative; }
-        header h1 { margin: 0; font-size: 1.8rem; color: #38bdf8; text-transform: uppercase; letter-spacing: 3px; font-weight: 900; }
-        .theme-toggle { position: absolute; right: 20px; top: 25px; cursor: pointer; font-size: 1.2rem; background: none; border: none; color: #38bdf8; }
+        header { background: var(--panel); padding: 20px; text-align: center; border-bottom: 3px solid var(--accent); position: relative; }
+        header h1 { margin: 0; font-size: 1.8rem; color: var(--accent); text-transform: uppercase; letter-spacing: 3px; font-weight: 900; }
+        .theme-toggle { position: absolute; right: 15px; top: 22px; cursor: pointer; font-size: 1.2rem; background: none; border: none; color: var(--accent); }
 
         #messages { list-style-type: none; margin: 0; padding: 20px; flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
 
-        /* --- WHATSAPP BUBBLE LOGIC --- */
+        /* WHATSAPP BUBBLE LOGIC */
         #messages li { 
-            padding: 8px 12px; border-radius: 8px; max-width: 75%; 
-            position: relative; box-shadow: 0 1px 0.5px rgba(0,0,0,0.13);
-            word-wrap: break-word; font-size: 0.95rem;
+            padding: 8px 12px; 
+            border-radius: 8px; 
+            max-width: 75%; 
+            position: relative; 
+            box-shadow: 0 1px 0.5px rgba(0,0,0,0.13);
+            font-size: 0.95rem;
+            line-height: 1.4;
         }
 
-        /* Messages sent by ME */
-        .sent { align-self: flex-end; background: var(--sent); color: var(--text); border-bottom-right-radius: 2px !important; }
+        /* Messages sent by YOU (Right side) */
+        .sent { 
+            align-self: flex-end; 
+            background: var(--my-msg) !important; 
+            border-bottom-right-radius: 0 !important;
+        }
 
-        /* Messages sent by OTHERS */
-        .received { align-self: flex-start; background: var(--received); color: var(--text); border-bottom-left-radius: 2px !important; }
+        /* Messages sent by OTHERS (Left side) */
+        .received { 
+            align-self: flex-start; 
+            background: var(--their-msg) !important; 
+            border-bottom-left-radius: 0 !important;
+        }
 
         .message-header { display: flex; flex-direction: column; margin-bottom: 4px; }
-        .user-name { font-weight: bold; font-size: 0.75rem; color: #38bdf8; }
+        .user-name { font-weight: bold; font-size: 0.75rem; color: var(--accent); }
         .timestamp { font-size: 0.65rem; opacity: 0.6; align-self: flex-end; margin-top: 4px; }
         
         .chat-img { max-width: 100%; border-radius: 8px; margin-top: 5px; }
         audio { margin-top: 8px; max-width: 200px; height: 35px; }
 
-        #form { background: var(--panel); padding: 10px 15px; display: flex; gap: 12px; align-items: center; }
-        .icon-stack { display: flex; flex-direction: column; gap: 8px; align-items: center; }
-        #input { flex-grow: 1; border: none; padding: 12px 18px; border-radius: 25px; background: var(--bg); color: var(--text); outline: none; }
-        
+        #form { background: var(--panel); padding: 10px 15px; display: flex; gap: 10px; align-items: center; }
+        .icon-stack { display: flex; flex-direction: column; gap: 5px; }
+        #input { flex-grow: 1; border: none; padding: 12px 15px; border-radius: 20px; background: var(--bg); color: var(--text); outline: none; }
         #file-input { display: none; }
-        .icon-btn { cursor: pointer; font-size: 1.4rem; color: #8696a0; transition: 0.2s; }
-        .send-btn { background: #38bdf8; color: #0f172a; border: none; padding: 10px 20px; border-radius: 25px; cursor: pointer; font-weight: bold; }
+        .icon-btn { cursor: pointer; font-size: 1.3rem; color: var(--accent); }
+        .send-btn { background: var(--accent); color: #0b141a; border: none; padding: 10px 18px; border-radius: 50%; cursor: pointer; font-weight: bold; }
         .recording { color: #ef4444; animation: blink 1s infinite; }
         @keyframes blink { 50% { opacity: 0.3; } }
     </style>
 </head>
 <body>
     <header>
-        <h1>Secure Chat</h1>
+        <h1>Secure Private Chatroom of A Squared</h1>
         <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
     </header>
 
@@ -67,13 +72,13 @@
         </div>
         <input type="file" id="file-input" accept="image/*">
         <input id="input" autocomplete="off" placeholder="Type a message..." />
-        <button class="send-btn">Send</button>
+        <button type="submit" class="send-btn">➤</button>
     </form>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         var socket = io();
-        var myName = prompt("Enter your name:") || "Guest";
+        var myName = prompt("Your Name:") || "Guest";
         let mediaRecorder;
         let audioChunks = [];
 
@@ -90,44 +95,32 @@
 
         document.getElementById('file-input').addEventListener('change', function(e) {
             var reader = new FileReader();
-            reader.onload = function(ev) {
-                socket.emit('chat message', { name: myName, msg: ev.target.result, type: 'image' });
-            };
+            reader.onload = ev => socket.emit('chat message', { name: myName, msg: ev.target.result, type: 'image' });
             reader.readAsDataURL(e.target.files[0]);
         });
 
-        // Voice Recording Logic
         const micBtn = document.getElementById('mic-btn');
         micBtn.addEventListener('mousedown', async () => {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                mediaRecorder = new MediaRecorder(stream);
-                audioChunks = [];
-                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-                mediaRecorder.onstop = () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
-                    const reader = new FileReader();
-                    reader.onload = ev => socket.emit('chat message', { name: myName, msg: ev.target.result, type: 'audio' });
-                    reader.readAsDataURL(audioBlob);
-                };
-                mediaRecorder.start();
-                micBtn.classList.add('recording');
-            } catch(err) { console.log(err); }
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+                const reader = new FileReader();
+                reader.onload = ev => socket.emit('chat message', { name: myName, msg: ev.target.result, type: 'audio' });
+                reader.readAsDataURL(audioBlob);
+            };
+            mediaRecorder.start();
+            micBtn.classList.add('recording');
         });
+        window.addEventListener('mouseup', () => { if (mediaRecorder && mediaRecorder.state === "recording") { mediaRecorder.stop(); micBtn.classList.remove('recording'); } });
 
-        window.addEventListener('mouseup', () => {
-            if (mediaRecorder && mediaRecorder.state === "recording") {
-                mediaRecorder.stop();
-                micBtn.classList.remove('recording');
-            }
-        });
-
-        // Receiving Messages
         socket.on('chat message', function(data) {
             var item = document.createElement('li');
             
-            // KEY STEP: Add "sent" class if it's me, "received" if it's someone else
-            item.classList.add(data.name === myName ? 'sent' : 'received');
+            // LOGIC: If name matches mine, use 'sent' class, else use 'received'
+            item.className = (data.name === myName) ? 'sent' : 'received';
 
             let content = data.msg;
             if (data.type === 'image') content = `<img class="chat-img" src="${data.msg}">`;
@@ -135,13 +128,11 @@
 
             item.innerHTML = `
                 <div class="message-header">
-                    ${data.name !== myName ? `<span class="user-name">${data.name}</span>` : ''}
+                    <span class="user-name">${data.name}</span>
                 </div>
-                <div class="message-body">${content}</div>
-                <div class="timestamp">${data.time}</div>
-                <div style="font-size:0.6rem; color:#38bdf8; text-align:right;" id="read-${data.id}"></div>
+                <div>${content}</div>
+                <div class="timestamp">${data.time} <span id="read-${data.id}"></span></div>
             `;
-            
             document.getElementById('messages').appendChild(item);
             document.getElementById('messages').scrollTo(0, document.getElementById('messages').scrollHeight);
             if (data.name !== myName) socket.emit('message read', { msgId: data.id, reader: myName });
@@ -149,11 +140,10 @@
 
         socket.on('update read status', function(data) {
             var el = document.getElementById('read-' + data.msgId);
-            if (el) el.innerText = "✓ Seen";
+            if (el) el.innerText = "✓";
         });
 
         socket.on('clear chat', function() { document.getElementById('messages').innerHTML = ''; });
     </script>
 </body>
 </html>
-
