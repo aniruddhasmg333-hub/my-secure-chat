@@ -25,5 +25,5 @@ io.on('connection', (socket) => {
 });
 
 http.listen(PORT, () => {
-  console.log('Server running on port ' + PORT);
+  console.log('Server running with Gradient UI on port ' + PORT);
 });
