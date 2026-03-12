@@ -2,87 +2,105 @@
 <html lang="en">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Private Chatroom</title>
+    <title>Secure Private Chat Room</title>
     <style>
-        :root { --bg: #0b141a; --panel: #202c33; --accent: #38bdf8; --text: #e9edef; --my-msg: #005c4b; --their-msg: #202c33; }
-        body.light-mode { --bg: #efeae2; --panel: #ffffff; --accent: #0284c7; --text: #111b21; --my-msg: #d9fdd3; --their-msg: #ffffff; }
-
-        body { margin: 0; font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; transition: 0.3s; }
-
-        header { background: var(--panel); padding: 20px; text-align: center; border-bottom: 3px solid var(--accent); position: relative; }
-        header h1 { margin: 0; font-size: 1.8rem; color: var(--accent); text-transform: uppercase; letter-spacing: 3px; font-weight: 900; }
-        .theme-toggle { position: absolute; right: 15px; top: 22px; cursor: pointer; font-size: 1.2rem; background: none; border: none; color: var(--accent); }
-
-        #messages { list-style-type: none; margin: 0; padding: 20px; flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
-
-        /* WHATSAPP BUBBLE LOGIC */
-        #messages li { 
-            padding: 8px 12px; 
-            border-radius: 8px; 
-            max-width: 75%; 
-            position: relative; 
-            box-shadow: 0 1px 0.5px rgba(0,0,0,0.13);
-            font-size: 0.95rem;
-            line-height: 1.4;
+        :root { 
+            --bg: #0f172a; 
+            --panel: #1e293b; 
+            --accent: #38bdf8; 
+            --text: #f8fafc;
+            /* Gradients */
+            --my-gradient: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
+            --their-gradient: linear-gradient(135deg, #334155 0%, #1e293b 100%);
         }
 
-        /* Messages sent by YOU (Right side) */
+        body { margin: 0; font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+        header { background: var(--panel); padding: 25px; text-align: center; border-bottom: 3px solid var(--accent); }
+        header h1 { margin: 0; font-size: 2.2rem; color: var(--accent); text-transform: uppercase; letter-spacing: 4px; font-weight: 900; }
+
+        #messages { list-style-type: none; margin: 0; padding: 20px; flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+
+        #messages li { 
+            padding: 12px 16px; 
+            border-radius: 18px; 
+            max-width: 70%; 
+            position: relative; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            color: white;
+            line-height: 1.5;
+        }
+
+        /* Your Messages: Purple Gradient */
         .sent { 
             align-self: flex-end; 
-            background: var(--my-msg) !important; 
-            border-bottom-right-radius: 0 !important;
+            background: var(--my-gradient); 
+            border-bottom-right-radius: 4px;
         }
 
-        /* Messages sent by OTHERS (Left side) */
+        /* Their Messages: Grey Gradient */
         .received { 
             align-self: flex-start; 
-            background: var(--their-msg) !important; 
-            border-bottom-left-radius: 0 !important;
+            background: var(--their-gradient); 
+            border-bottom-left-radius: 4px;
+            border-left: 3px solid var(--accent);
         }
 
-        .message-header { display: flex; flex-direction: column; margin-bottom: 4px; }
-        .user-name { font-weight: bold; font-size: 0.75rem; color: var(--accent); }
-        .timestamp { font-size: 0.65rem; opacity: 0.6; align-self: flex-end; margin-top: 4px; }
-        
-        .chat-img { max-width: 100%; border-radius: 8px; margin-top: 5px; }
-        audio { margin-top: 8px; max-width: 200px; height: 35px; }
+        .user-name { font-weight: bold; font-size: 0.75rem; color: #cbd5e1; margin-bottom: 4px; display: block; }
+        .timestamp-area { font-size: 0.65rem; opacity: 0.8; margin-top: 6px; display: flex; justify-content: flex-end; align-items: center; gap: 5px; }
+        .read-receipt { color: #4ade80; font-weight: bold; }
 
-        #form { background: var(--panel); padding: 10px 15px; display: flex; gap: 10px; align-items: center; }
-        .icon-stack { display: flex; flex-direction: column; gap: 5px; }
-        #input { flex-grow: 1; border: none; padding: 12px 15px; border-radius: 20px; background: var(--bg); color: var(--text); outline: none; }
+        .chat-img { max-width: 100%; border-radius: 10px; margin-top: 5px; }
+        audio { margin-top: 8px; filter: invert(100%); max-width: 220px; }
+
+        #form { background: var(--panel); padding: 15px 20px; display: flex; gap: 15px; align-items: center; border-top: 1px solid #334155; }
+        .icon-stack { display: flex; flex-direction: column; gap: 8px; }
+        
+        #input { 
+            flex-grow: 1; border: none; padding: 14px 20px; border-radius: 30px; 
+            background: #0f172a; color: white; outline: none; border: 1px solid #334155;
+            transition: border 0.3s;
+        }
+        #input:focus { border-color: var(--accent); }
+
+        /* ATTRACTIVE SEND BUTTON */
+        .send-btn { 
+            background: var(--my-gradient); 
+            color: white; border: none; 
+            width: 50px; height: 50px; 
+            border-radius: 50%; cursor: pointer; 
+            font-size: 1.2rem; display: flex; 
+            align-items: center; justify-content: center;
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .send-btn:hover { transform: scale(1.1); box-shadow: 0 0 20px rgba(168, 85, 247, 0.6); }
+        .send-btn:active { transform: scale(0.9); }
+
+        .icon-btn { cursor: pointer; font-size: 1.4rem; color: var(--accent); transition: 0.2s; }
         #file-input { display: none; }
-        .icon-btn { cursor: pointer; font-size: 1.3rem; color: var(--accent); }
-        .send-btn { background: var(--accent); color: #0b141a; border: none; padding: 10px 18px; border-radius: 50%; cursor: pointer; font-weight: bold; }
         .recording { color: #ef4444; animation: blink 1s infinite; }
         @keyframes blink { 50% { opacity: 0.3; } }
     </style>
 </head>
 <body>
-    <header>
-        <h1>Secure Private Chatroom of A Squared</h1>
-        <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
-    </header>
-
+    <header><h1>Secure Private Chatroom of A Squared!</h1></header>
     <ul id="messages"></ul>
-
     <form id="form">
         <div class="icon-stack">
             <label for="file-input" class="icon-btn">📎</label>
             <span id="mic-btn" class="icon-btn">🎤</span>
         </div>
         <input type="file" id="file-input" accept="image/*">
-        <input id="input" autocomplete="off" placeholder="Type a message..." />
-        <button type="submit" class="send-btn">➤</button>
+        <input id="input" autocomplete="off" placeholder="Write something..." />
+        <button type="submit" class="send-btn">🚀</button>
     </form>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         var socket = io();
-        var myName = prompt("Your Name:") || "Guest";
-        let mediaRecorder;
-        let audioChunks = [];
-
-        function toggleTheme() { document.body.classList.toggle('light-mode'); }
+        var myName = prompt("Name:") || "User";
+        let mediaRecorder, audioChunks = [];
 
         document.getElementById('form').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -111,27 +129,24 @@
                 reader.onload = ev => socket.emit('chat message', { name: myName, msg: ev.target.result, type: 'audio' });
                 reader.readAsDataURL(audioBlob);
             };
-            mediaRecorder.start();
-            micBtn.classList.add('recording');
+            mediaRecorder.start(); micBtn.classList.add('recording');
         });
-        window.addEventListener('mouseup', () => { if (mediaRecorder && mediaRecorder.state === "recording") { mediaRecorder.stop(); micBtn.classList.remove('recording'); } });
+        window.addEventListener('mouseup', () => { if (mediaRecorder?.state === "recording") { mediaRecorder.stop(); micBtn.classList.remove('recording'); } });
 
         socket.on('chat message', function(data) {
             var item = document.createElement('li');
-            
-            // LOGIC: If name matches mine, use 'sent' class, else use 'received'
             item.className = (data.name === myName) ? 'sent' : 'received';
-
             let content = data.msg;
             if (data.type === 'image') content = `<img class="chat-img" src="${data.msg}">`;
             if (data.type === 'audio') content = `<audio controls src="${data.msg}"></audio>`;
 
             item.innerHTML = `
-                <div class="message-header">
-                    <span class="user-name">${data.name}</span>
-                </div>
+                <span class="user-name">${data.name}</span>
                 <div>${content}</div>
-                <div class="timestamp">${data.time} <span id="read-${data.id}"></span></div>
+                <div class="timestamp-area">
+                    <span>${data.time}</span>
+                    <span class="read-receipt" id="read-${data.id}"></span>
+                </div>
             `;
             document.getElementById('messages').appendChild(item);
             document.getElementById('messages').scrollTo(0, document.getElementById('messages').scrollHeight);
@@ -140,10 +155,11 @@
 
         socket.on('update read status', function(data) {
             var el = document.getElementById('read-' + data.msgId);
-            if (el) el.innerText = "✓";
+            if (el) el.innerHTML = `✓ <span style="font-size:0.55rem">Seen by ${data.reader}</span>`;
         });
 
         socket.on('clear chat', function() { document.getElementById('messages').innerHTML = ''; });
     </script>
 </body>
 </html>
+
