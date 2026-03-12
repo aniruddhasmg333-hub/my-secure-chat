@@ -1,106 +1,125 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Private Chat Room</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Secured Private Chat Room</title>
     <style>
         :root { 
-            --bg: #0f172a; 
-            --panel: #1e293b; 
-            --accent: #38bdf8; 
-            --text: #f8fafc;
-            /* Gradients */
+            --bg: #0b141a; --panel: #202c33; --accent: #38bdf8; --text: #e9edef;
             --my-gradient: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);
             --their-gradient: linear-gradient(135deg, #334155 0%, #1e293b 100%);
         }
 
-        body { margin: 0; font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        body.light-mode { 
+            --bg: #efeae2; --panel: #ffffff; --accent: #0284c7; --text: #111b21;
+            --my-gradient: linear-gradient(135deg, #d9fdd3 0%, #c1eeb0 100%);
+            --their-gradient: linear-gradient(135deg, #ffffff 0%, #f0f2f5 100%);
+        }
 
-        header { background: var(--panel); padding: 25px; text-align: center; border-bottom: 3px solid var(--accent); }
-        header h1 { margin: 0; font-size: 2.2rem; color: var(--accent); text-transform: uppercase; letter-spacing: 4px; font-weight: 900; }
+        body { 
+            margin: 0; font-family: 'Segoe UI', Helvetica, sans-serif; 
+            background: var(--bg); color: var(--text); height: 100vh; 
+            display: flex; flex-direction: column; overflow: hidden; transition: 0.3s;
+        }
 
-        #messages { list-style-type: none; margin: 0; padding: 20px; flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+        /* CENTERED HEADER */
+        header { 
+            background: var(--panel); padding: 20px; text-align: center; 
+            border-bottom: 3px solid var(--accent); z-index: 10;
+        }
+        header h1 { margin: 0; font-size: 1.8rem; color: var(--accent); text-transform: uppercase; letter-spacing: 3px; font-weight: 900; }
+
+        /* THEME TOGGLE FLOATING */
+        .theme-btn { 
+            position: absolute; right: 15px; top: 18px; cursor: pointer; 
+            font-size: 1.4rem; background: none; border: none; color: var(--accent); 
+        }
+
+        /* SCROLLABLE AREA */
+        #messages { 
+            list-style-type: none; margin: 0; padding: 20px; flex-grow: 1; 
+            overflow-y: auto; display: flex; flex-direction: column; gap: 10px;
+            scroll-behavior: smooth;
+        }
 
         #messages li { 
-            padding: 12px 16px; 
-            border-radius: 18px; 
-            max-width: 70%; 
-            position: relative; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            color: white;
-            line-height: 1.5;
+            padding: 10px 14px; border-radius: 15px; max-width: 85%; 
+            position: relative; box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            animation: fadeIn 0.3s ease;
         }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Your Messages: Purple Gradient */
-        .sent { 
-            align-self: flex-end; 
-            background: var(--my-gradient); 
-            border-bottom-right-radius: 4px;
-        }
+        .sent { align-self: flex-end; background: var(--my-gradient); border-bottom-right-radius: 2px; color: white; }
+        .light-mode .sent { color: #111b21; }
+        
+        .received { align-self: flex-start; background: var(--their-gradient); border-bottom-left-radius: 2px; }
 
-        /* Their Messages: Grey Gradient */
-        .received { 
-            align-self: flex-start; 
-            background: var(--their-gradient); 
-            border-bottom-left-radius: 4px;
-            border-left: 3px solid var(--accent);
-        }
+        .user-name { font-weight: bold; font-size: 0.75rem; margin-bottom: 4px; display: block; opacity: 0.8; }
+        .timestamp-area { font-size: 0.65rem; opacity: 0.7; margin-top: 5px; display: flex; justify-content: flex-end; align-items: center; gap: 4px; }
+        .read-receipt { color: #4ade80; font-size: 0.8rem; }
 
-        .user-name { font-weight: bold; font-size: 0.75rem; color: #cbd5e1; margin-bottom: 4px; display: block; }
-        .timestamp-area { font-size: 0.65rem; opacity: 0.8; margin-top: 6px; display: flex; justify-content: flex-end; align-items: center; gap: 5px; }
-        .read-receipt { color: #4ade80; font-weight: bold; }
+        .chat-img { max-width: 100%; border-radius: 10px; margin-top: 5px; cursor: zoom-in; }
+        audio { margin-top: 8px; max-width: 100%; height: 35px; }
 
-        .chat-img { max-width: 100%; border-radius: 10px; margin-top: 5px; }
-        audio { margin-top: 8px; filter: invert(100%); max-width: 220px; }
-
-        #form { background: var(--panel); padding: 15px 20px; display: flex; gap: 15px; align-items: center; border-top: 1px solid #334155; }
+        /* NAVIGATION & INPUT */
+        #form { background: var(--panel); padding: 12px 18px; display: flex; gap: 12px; align-items: center; border-top: 1px solid rgba(0,0,0,0.1); }
         .icon-stack { display: flex; flex-direction: column; gap: 8px; }
         
         #input { 
-            flex-grow: 1; border: none; padding: 14px 20px; border-radius: 30px; 
-            background: #0f172a; color: white; outline: none; border: 1px solid #334155;
-            transition: border 0.3s;
+            flex-grow: 1; border: none; padding: 12px 18px; border-radius: 25px; 
+            background: var(--bg); color: var(--text); outline: none; font-size: 1rem;
+            border: 1px solid rgba(120,120,120,0.2);
         }
-        #input:focus { border-color: var(--accent); }
 
-        /* ATTRACTIVE SEND BUTTON */
+        /* OFFICIAL SEND ICON STYLE */
         .send-btn { 
-            background: var(--my-gradient); 
-            color: white; border: none; 
-            width: 50px; height: 50px; 
-            border-radius: 50%; cursor: pointer; 
-            font-size: 1.2rem; display: flex; 
-            align-items: center; justify-content: center;
-            box-shadow: 0 0 15px rgba(168, 85, 247, 0.4);
-            transition: transform 0.2s, box-shadow 0.2s;
+            background: var(--accent); color: #0b141a; border: none; 
+            width: 45px; height: 45px; border-radius: 50%; 
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: 0.2s; flex-shrink: 0;
         }
-        .send-btn:hover { transform: scale(1.1); box-shadow: 0 0 20px rgba(168, 85, 247, 0.6); }
-        .send-btn:active { transform: scale(0.9); }
+        .send-btn:hover { transform: scale(1.05); filter: brightness(1.1); }
+        .send-btn svg { width: 20px; height: 20px; fill: currentColor; transform: rotate(45deg); margin-left: -3px; }
 
-        .icon-btn { cursor: pointer; font-size: 1.4rem; color: var(--accent); transition: 0.2s; }
+        .icon-btn { cursor: pointer; font-size: 1.3rem; color: var(--accent); }
         #file-input { display: none; }
         .recording { color: #ef4444; animation: blink 1s infinite; }
         @keyframes blink { 50% { opacity: 0.3; } }
+
+        /* Responsive laptop adjustment */
+        @media (min-width: 768px) {
+            #messages { padding: 40px 15%; }
+            #messages li { max-width: 60%; }
+        }
     </style>
 </head>
 <body>
-    <header><h1>Secure Private Chatroom of A Squared!</h1></header>
+    <header>
+        <h1>Secure Private Chat Room of A-Squared!</h1>
+        <button class="theme-btn" onclick="toggleTheme()">🌓</button>
+    </header>
+
     <ul id="messages"></ul>
+
     <form id="form">
         <div class="icon-stack">
             <label for="file-input" class="icon-btn">📎</label>
             <span id="mic-btn" class="icon-btn">🎤</span>
         </div>
         <input type="file" id="file-input" accept="image/*">
-        <input id="input" autocomplete="off" placeholder="Write something..." />
-        <button type="submit" class="send-btn">🚀</button>
+        <input id="input" autocomplete="off" placeholder="Type a message..." />
+        <button type="submit" class="send-btn">
+            <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        </button>
     </form>
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
         var socket = io();
-        var myName = prompt("Name:") || "User";
+        var myName = prompt("Display Name:") || "User";
         let mediaRecorder, audioChunks = [];
+
+        function toggleTheme() { document.body.classList.toggle('light-mode'); }
 
         document.getElementById('form').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -119,17 +138,19 @@
 
         const micBtn = document.getElementById('mic-btn');
         micBtn.addEventListener('mousedown', async () => {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorder = new MediaRecorder(stream);
-            audioChunks = [];
-            mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-            mediaRecorder.onstop = () => {
-                const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
-                const reader = new FileReader();
-                reader.onload = ev => socket.emit('chat message', { name: myName, msg: ev.target.result, type: 'audio' });
-                reader.readAsDataURL(audioBlob);
-            };
-            mediaRecorder.start(); micBtn.classList.add('recording');
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
+                    const reader = new FileReader();
+                    reader.onload = ev => socket.emit('chat message', { name: myName, msg: ev.target.result, type: 'audio' });
+                    reader.readAsDataURL(audioBlob);
+                };
+                mediaRecorder.start(); micBtn.classList.add('recording');
+            } catch(e) { alert("Mic error: " + e.message); }
         });
         window.addEventListener('mouseup', () => { if (mediaRecorder?.state === "recording") { mediaRecorder.stop(); micBtn.classList.remove('recording'); } });
 
@@ -149,17 +170,21 @@
                 </div>
             `;
             document.getElementById('messages').appendChild(item);
-            document.getElementById('messages').scrollTo(0, document.getElementById('messages').scrollHeight);
+            // Smooth scroll to bottom
+            const msgList = document.getElementById('messages');
+            msgList.scrollTo({ top: msgList.scrollHeight, behavior: 'smooth' });
+            
             if (data.name !== myName) socket.emit('message read', { msgId: data.id, reader: myName });
         });
 
         socket.on('update read status', function(data) {
             var el = document.getElementById('read-' + data.msgId);
-            if (el) el.innerHTML = `✓ <span style="font-size:0.55rem">Seen by ${data.reader}</span>`;
+            if (el) el.innerHTML = `✓ <small style="font-size:0.5rem">Seen by ${data.reader}</small>`;
         });
 
         socket.on('clear chat', function() { document.getElementById('messages').innerHTML = ''; });
     </script>
 </body>
 </html>
+
 
