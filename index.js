@@ -11,20 +11,12 @@ io.on('connection', (socket) => {
     const now = new Date();
     data.time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     data.id = Date.now() + Math.random(); 
-    
-    if (data.msg === "/clear") {
-        io.emit('clear chat');
-    } else {
-        io.emit('chat message', data);
-    }
+    if (data.msg === "/clear") { io.emit('clear chat'); } 
+    else { io.emit('chat message', data); }
   });
-
-  socket.on('message read', (readData) => {
-    io.emit('update read status', readData);
-  });
+  socket.on('message read', (readData) => { io.emit('update read status', readData); });
 });
 
 http.listen(PORT, () => {
   console.log('Server running on port ' + PORT);
 });
-
