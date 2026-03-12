@@ -7,6 +7,15 @@ const PORT = process.env.PORT || 3000;
 app.use(express.static(__dirname + '/public'));
 
 io.on('connection', (socket) => {
+  // Listen for typing events
+  socket.on('typing', (data) => {
+    socket.broadcast.emit('display typing', data);
+  });
+
+  socket.on('stop typing', () => {
+    socket.broadcast.emit('hide typing');
+  });
+
   socket.on('chat message', (data) => {
     const now = new Date();
     data.time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -14,9 +23,12 @@ io.on('connection', (socket) => {
     if (data.msg === "/clear") { io.emit('clear chat'); } 
     else { io.emit('chat message', data); }
   });
-  socket.on('message read', (readData) => { io.emit('update read status', readData); });
+
+  socket.on('message read', (readData) => { 
+    io.emit('update read status', readData); 
+  });
 });
 
 http.listen(PORT, () => {
-  console.log('Server running on port ' + PORT);
+  console.log('Server running with Typing Indicator on port ' + PORT);
 });
